@@ -61,6 +61,23 @@ func createMovie(w http.ResponseWriter, r *http.Request){
 	_= json.NewDecoder(r.Body).Decode(&singleMovie)
 	singleMovie.ID = strconv.Itoa(rand.Intn(100000000))
 	movies = append(movies, singleMovie)
+	json.NewEncoder(w).Encode(singleMovie)
+}
+
+func updateMovie(w http.ResponseWriter, r *http.Request){
+	w.Header().Set("Content-Type", "application/json")
+	params := mux.Vars(r)
+	for index, elem := range movies {
+		if elem.ID == params["id"]{
+			movies = append(movies[:index], movies[index + 1:]...)
+			var movieSingle Movie
+			_=json.NewDecoder(r.Body).Decode(&movieSingle)
+			movieSingle.ID = params["id"]
+			movies = append(movies, movieSingle)
+			json.NewEncoder(w).Encode(movieSingle)
+			return
+		}
+	}
 }
 
 func main(){
@@ -72,7 +89,7 @@ func main(){
 	r.HandleFunc("/movies", getMovies).Methods("GET")
 	r.HandleFunc("/movies/{id}", getMovie).Methods("GET")
 	r.HandleFunc("/movies", createMovie).Methods("POST")
-	// r.HandleFunc("/movies/{id}", updateMovie).Methods("PUT")
+	r.HandleFunc("/movies/{id}", updateMovie).Methods("PUT")
 	r.HandleFunc("/movies/{id}", deleteMovie).Methods("DELETE")
 
 	fmt.Printf("Server start, port: 8000\n")
